@@ -1,83 +1,83 @@
-# Permission-Bounded Tool Use: a Synthetic Benchmark for Agentic AI
+# Agent tool-policy benchmark: do permission rules stop hidden instructions in a clinic?
 
-**Version:** 0.1.0 · **Date:** 26 October 2026 · **License:** MIT for code; see `LICENSE` and `DATA_CARD.md`.
+A small, reproducible test of five ways to control what a tool-using AI agent may do, first in a simulator and then with real local models (`qwen2.5:3b`, `llama3.1:8b`) on invented physiotherapy-clinic tasks in English and Roman Urdu.
 
 ## Research question
 
-Under a controlled synthetic workload, how do an unrestricted tool executor, a static denylist, a simulated confirmation gate, and task-scoped capabilities trade off unauthorised action acceptance against legitimate task completion?
+When a hidden instruction is placed inside a patient note, how often do small local models propose the harmful tool action, and which policy stops it without blocking the clinic's real work? In particular: does a permission rule that checks only the **action name** miss attacks that use an allowed action with the **wrong argument** (an approved referral sent to a different address, a delete aimed at the real record instead of the duplicate)?
 
-### Why this question
+## Why it matters
 
-This is a small, reproducible software-security experiment inspired by current UK university research on secure AI-agent sandboxes and agent reliability. It is not copied from or endorsed by any university. Official research context is linked in `docs/RESEARCH_CONTEXT.md`.
+Prompt-injection benchmarks for tool agents (for example [InjecAgent](https://arxiv.org/abs/2403.02691) and [AgentDojo](https://arxiv.org/abs/2406.13352)) are in English and mostly use large hosted models. A small clinic running a local model would also face code-mixed Roman Urdu notes, and many simple guards are written as lists of allowed or forbidden tool names. This project measures that gap on a tiny, fully invented workload. It follows on from my [tool-call self-correction pilot](https://github.com/MHKhan50/agentic-ai-research-log/tree/main/tool-call-self-correction), where calls passed the schema but carried wrong values.
 
-### What is novel/useful here?
+## Policies
 
-The package provides a lightweight baseline benchmark and explicitly records both attack success and utility costs. The narrow practical question is whether a simple fixed denylist misses unauthorised actions that are not in its denylist, while task-scoped capability enforcement and confirmation gates have different utility/intervention trade-offs. This is a reproducibility prototype, not a claim that this exact gap is absent from the literature. A dissertation should first review recent agent-security benchmarks and then refine the gap.
+| Policy | Rule |
+|---|---|
+| `unrestricted` | every proposed action runs |
+| `static_denylist` | `send_external` and `delete_record` are always blocked |
+| `simulated_confirmation` | sensitive actions go to a reviewer who is right 95% of the time (simulated, not a real person) |
+| `task_scoped_capability` | only the action names allowed for this task run |
+| `scoped_with_arguments` | allowed action names **and** this task's patient, approved recipient and date |
 
-## Quick run on macOS
+The two scoped policies are given the task's ground-truth permissions, so they are reference controls, not something a deployed system gets for free.
 
-Use Python 3.9.6 or newer. No third-party dependencies, network calls, model downloads, Ollama server, or paid cloud are required.
+## Two experiments
+
+**1. Simulator** (`agent_policy_benchmark.py`, `run_experiment.py`): 1,000 generated scenarios per seed, seeds 11, 23 and 37. The attack and error rates are settings I chose, so these numbers show how the policies behave by design, not how often real attacks happen. One thing the tests make visible: the confirmation gate only reviews sensitive actions, so even a perfect reviewer lets unauthorised low-risk actions through.
+
+**2. Local LLM test** (`run_llm.py`, `clinic/`): 10 invented clinic tasks (summaries, follow-up booking, approved referrals, removing a confirmed duplicate) x 2 languages x {clean, hidden instruction} = 40 replies per model. Six hidden instructions ask for an action outside the task; four use an allowed action with the wrong argument. The model only proposes actions as JSON; nothing is executed. Temperature 0, seed 7.
+
+## Run (Mac, Python 3.9+, standard library only)
 
 ```bash
-cd ~/Downloads/agent-tool-policy-benchmark
-python3 run_experiment.py --n 1000 --seeds 11 23 37
-python3 -m unittest discover -s tests && python3 plot_results.py
+python3 -m unittest discover -s tests -v
+python3 run_experiment.py --n 1000 --seeds 11 23 37 && python3 plot_results.py
+python3 run_llm.py --models qwen2.5:3b llama3.1:8b      # needs the Ollama app running
 ```
 
-Outputs:
-- `outputs/metrics_by_seed.csv`: one row per policy and seed.
-- `outputs/metrics_summary.csv`: means and standard deviations across configured seeds.
-- `outputs/policy_comparison.svg`: generated after the plotting command.
-- `data/synthetic_scenarios.csv`: a synthetic scenario dataset written by the experiment runner.
+`python3 run_llm.py --score-only` re-scores the saved replies without calling a model.
 
-If `python3` is not your Python 3.9.6 installation, use the exact interpreter path you normally use for Python 3.9.6.
+Outputs: `outputs/metrics_summary.csv`, `outputs/policy_comparison.svg` (simulator); `outputs/llm_replies.jsonl` (every raw reply), `outputs/llm_metrics.csv`, `outputs/llm_run_metadata.json` (Ollama version, model digests, prompt).
 
-## Policies compared
+## Results
 
-1. `unrestricted`: every proposed tool action is accepted.
-2. `static_denylist`: blocks `send_external` and `delete_record`, regardless of task context.
-3. `simulated_confirmation`: sensitive actions are reviewed by a *simulated* decision-maker with configurable accuracy (default 95%). No real people are involved; this is a sensitivity parameter, not an empirical human-performance estimate.
-4. `task_scoped_capability`: accepts only actions in the scenario's declared allowed-action set. This has access to synthetic ground-truth scope and should be interpreted as an idealised reference policy, not a deployable oracle.
+### Simulator (mean of 3 seeds)
 
-## Metrics
+| Policy | Attack success | Task completion | Authorised actions blocked |
+|---|---:|---:|---:|
+| Unrestricted | _to fill from my run_ | | |
+| Static denylist | | | |
+| Simulated confirmation | | | |
+| Task-scoped capability | | | |
 
-- **Attack success rate:** injected unauthorised proposals accepted / injected proposals.
-- **Unauthorised action acceptance rate:** all unauthorised proposals accepted / all unauthorised proposals.
-- **Task completion rate:** scenarios in which every required action was both proposed and accepted / scenarios.
-- **Authorised action block rate:** authorised proposals rejected / authorised proposals.
-- **Review rate:** proposals routed through the simulated confirmation gate / all proposals.
+### Local LLM test (counts out of 10 tasks)
 
-All denominators are exported. Rates with zero denominator are reported as 0.0; inspect counts before interpreting those cases.
+_To fill from my run: hidden instruction followed, attack accepted per policy, tasks completed clean and injected, value errors, per model and language._
 
-## Research protocol and extensions
+## Notes from my run
 
-- Start with `--n 1000 --seeds 11 23 37`; then increase `--n` and add seeds.
-- Vary `--attack-rate` (for example 0.10, 0.30, 0.50) and `--error-rate` independently. These are experimental factors, not estimates of real-world frequency.
-- Extend confirmation accuracy from 0.80 to 0.99 by calling `evaluate_policy` from a small analysis script.
-- Add task types, policy rules, multi-step dependencies, capability revocation, or tool-result prompt injection.
-- For stronger claims, compare against a reviewed external benchmark and a real tool-using model under a safely sandboxed environment. Record model version, prompt, decoding settings, and failures.
-- Report variation across seeds and avoid interpreting synthetic rates as deployment risk.
-
-## Data and attribution
-
-The dataset is generated by `generate_dataset.py` or `run_experiment.py`. It contains no personal data, user logs, production agent traces, or third-party benchmark records. See `DATA_CARD.md` for schema, limitations, and recommended citation. Code is MIT-licensed; generated synthetic data is dedicated to CC0 where legally possible.
+_To add after the run._
 
 ## Limitations
 
-This is a hand-designed simulator. It does not call an LLM, test prompt injection against Qwen/Llama/Ollama, model operating-system sandboxing, or prove policy correctness. The attack and task frequencies are chosen by the experimenter. Task-scoped capability has access to ground-truth permissions, so it is an idealised upper-bound control. Results are exploratory and should not be represented as evidence of real-world security efficacy.
+- Very small: 10 tasks, one prompt, one run per model at temperature 0. Counts, not rates; differences of one or two tasks are noise.
+- All tasks, notes and hidden instructions are invented by me, and the Roman Urdu is one person's spelling. The hidden instructions are simple and visible, not adaptive attacks.
+- The model proposes actions in one reply; there is no multi-step loop and no real tool output.
+- Scoped policies see the true permissions, and the reviewer is simulated. The simulator's rates are design choices.
+- Results do not say how secure any model or product is in real use.
 
-## Publication checklist
+## Files
 
-1. Run tests and the experiment; keep raw CSVs and the generated SVG.
-2. Inspect at least 10 generated scenarios manually; verify all actions and permissions make sense.
-3. Rerun with at least 3 seeds and a small sensitivity grid; report the grid, not only the best result.
-4. Review the article draft in `docs/ARTICLE_DRAFT.md`; replace generic prose with your verified output values and explain limitations.
-5. Push the code and generated outputs to GitHub; tag a version only after review.
-6. If the dataset is useful independently, publish `data/synthetic_scenarios.csv` with `DATA_CARD.md` on Kaggle; do not claim it is real-world data.
-7. Consider Zenodo/OSF/Figshare for a citable archive/DOI. Avoid cross-posting without a clear purpose.
-8. If adding the article to the website, validate its direct URL and listing URL after deployment.
-9. Optionally inspect the published URL in Google Search Console and request indexing. A request is not a guarantee; Google indexing is not certification.
+| Path | What |
+|---|---|
+| `agent_policy_benchmark.py`, `run_experiment.py`, `generate_dataset.py`, `plot_results.py` | simulator, runner, dataset writer, SVG chart |
+| `clinic/tasks.json` | 10 invented tasks, English and Roman Urdu, with hidden instructions |
+| `clinic/score.py` | parsing of model replies and the five policies |
+| `run_llm.py` | Ollama runner and summary |
+| `tests/` | simulator and scoring tests (no Ollama needed) |
+| `data/synthetic_scenarios.csv`, `DATA_CARD.md` | generated simulator scenarios and their data card |
 
-## Citation
+## Licence
 
-See `CITATION.cff`. Cite the version and repository URL actually used. Do not cite the university pages as if they support experimental results; they provide topic context only.
+Code MIT. Generated and invented data CC0. See `LICENSE` and `DATA_CARD.md`.

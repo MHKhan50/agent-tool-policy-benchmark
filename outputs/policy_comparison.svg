@@ -23,8 +23,8 @@
 <rect x="300" y="159" width="310.5" height="22" fill="#D17B49"/>
 <text x="617.5" y="174" font-size="12" font-family="Arial" fill="#222">0.554</text>
 <text x="288" y="208" text-anchor="end" font-size="12" font-family="Arial" fill="#222">simulated confirmation</text>
-<rect x="300" y="193" width="249.3" height="22" fill="#579A77"/>
-<text x="556.3" y="208" font-size="12" font-family="Arial" fill="#222">0.445</text>
+<rect x="300" y="193" width="250.4" height="22" fill="#579A77"/>
+<text x="557.4" y="208" font-size="12" font-family="Arial" fill="#222">0.447</text>
 <text x="288" y="242" text-anchor="end" font-size="12" font-family="Arial" fill="#222">task scoped capability</text>
 <rect x="300" y="227" width="0.0" height="22" fill="#8B6FA8"/>
 <text x="307.0" y="242" font-size="12" font-family="Arial" fill="#222">0.000</text>

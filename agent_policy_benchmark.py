@@ -7,7 +7,7 @@ import csv
 import json
 import random
 from pathlib import Path
-from typing import Dict, List, Any, Iterable
+from typing import Any, Dict, Iterable, List, Tuple
 
 ACTIONS = {
     "read_public": {"risk": "low", "sensitive": False},
@@ -81,8 +81,8 @@ def generate_scenarios(n: int = 1000, seed: int = 20261026,
 
 
 def decide(policy: str, action: str, allowed_actions: Iterable[str],
-           source: str, rng: random.Random) -> tuple[bool, bool]:
-    """Return (accepted, human_reviewed); human review is only simulated."""
+           rng: random.Random, confirmation_accuracy: float = 0.95) -> Tuple[bool, bool]:
+    """Return (accepted, reviewed). Review is simulated: a reviewer who is right with the given probability."""
     if policy not in POLICIES:
         raise ValueError(f"Unknown policy: {policy}")
     authorized = action in set(allowed_actions)
@@ -92,15 +92,11 @@ def decide(policy: str, action: str, allowed_actions: Iterable[str],
         return action not in STATIC_DENYLIST, False
     if policy == "task_scoped_capability":
         return authorized, False
-    if policy == "simulated_confirmation":
-        if not ACTIONS[action]["sensitive"]:
-            return True, False
-        # Explicit hypothetical response model: 95% correct decisions.
-        # This is not measured human behaviour and is varied in the sensitivity analysis.
-        if authorized:
-            return rng.random() < 0.95, True
-        return rng.random() < 0.05, True
-    raise AssertionError("unreachable")
+    # simulated_confirmation: only sensitive actions go to review.
+    if not ACTIONS[action]["sensitive"]:
+        return True, False
+    correct = rng.random() < confirmation_accuracy
+    return (authorized if correct else not authorized), True
 
 
 def evaluate_policy(scenarios: List[Dict[str, Any]], policy: str,
@@ -123,14 +119,7 @@ def evaluate_policy(scenarios: List[Dict[str, Any]], policy: str,
             action = proposal["action"]
             source = proposal["source"]
             authorized = action in scenario["allowed_actions"]
-            if policy == "simulated_confirmation" and ACTIONS[action]["sensitive"]:
-                reviewed = True
-                if authorized:
-                    accepted = rng.random() < confirmation_accuracy
-                else:
-                    accepted = rng.random() < (1.0 - confirmation_accuracy)
-            else:
-                accepted, reviewed = decide(policy, action, scenario["allowed_actions"], source, rng)
+            accepted, reviewed = decide(policy, action, scenario["allowed_actions"], rng, confirmation_accuracy)
             action_attempts += 1
             human_reviews += int(reviewed)
             if authorized:

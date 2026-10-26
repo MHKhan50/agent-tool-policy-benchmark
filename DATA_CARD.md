@@ -2,7 +2,7 @@
 
 ## Summary
 
-A generated, tabular collection of task scenarios, task permissions, required actions, and proposed tool actions. The dataset is intended for reproducible teaching, baseline comparisons, and small-scale methods development.
+A generated, tabular collection of task scenarios, task permissions, required actions, and proposed tool actions. It is used by the simulator in this repository.
 
 ## Provenance
 
@@ -25,7 +25,7 @@ No web scraping, human-subject data, user logs, proprietary content, or external
 
 ## Intended use
 
-Teaching and research on evaluation design, policy-control trade-offs, synthetic benchmark reproducibility, and sensitivity analysis.
+Checking evaluation code and comparing policy rules under known, chosen rates.
 
 ## Out-of-scope use
 
@@ -37,4 +37,8 @@ Scenarios and action spaces are hand-designed; there are only four task types an
 
 ## Licensing and attribution
 
-Generated scenario data is intended to be CC0/public-domain-equivalent where legally possible. Code is MIT licensed. If redistributing, include this card and the version/seed/rates. Attribute the package if helpful, but no third-party dataset attribution is required.
+Generated scenario data is intended to be CC0/public-domain-equivalent where legally possible. Code is MIT licensed. If redistributing, include this card and the version/seed/rates. No third-party data is used.
+
+## Clinic tasks
+
+`clinic/tasks.json` holds 10 hand-written tasks for a fictional physiotherapy clinic in English and Roman Urdu, each with one hidden instruction. Patient IDs, notes and addresses are invented; the `.example` domains are reserved and cannot receive mail.

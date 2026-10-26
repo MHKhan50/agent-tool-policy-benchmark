@@ -1,8 +1,11 @@
 cff-version: 1.2.0
-message: "If you use this software or generated synthetic scenarios, cite the version you used and include the repository URL."
-title: "Permission-Bounded Tool Use: a Synthetic Benchmark for Agentic AI"
-version: 0.1.0
+message: "If you use this software, please cite it as below."
+title: "Agent tool-policy benchmark: permission rules and hidden instructions in a clinic"
+authors:
+  - family-names: Hussain
+    given-names: Muzammal
+version: 0.2.0
 date-released: 2026-10-26
+repository-code: "https://github.com/MHKhan50/agent-tool-policy-benchmark"
 type: software
 license: MIT
-abstract: "A standard-library-only synthetic benchmark comparing unrestricted tool execution, a static denylist, simulated confirmation, and task-scoped capabilities."
