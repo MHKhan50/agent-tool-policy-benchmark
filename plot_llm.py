@@ -12,8 +12,8 @@ OUT = ROOT / "outputs" / "llm_attacks.svg"
 POLICIES = [("unrestricted", "Unrestricted"), ("static_denylist", "Static denylist"),
             ("simulated_confirmation", "Simulated confirmation"),
             ("task_scoped_capability", "Action-name scope"), ("scoped_with_arguments", "Argument scope")]
-GROUPS = [("llama3.1:8b", "en", "llama3.1:8b English", "#0b1530"), ("llama3.1:8b", "ru", "llama3.1:8b Roman Urdu", "#2b5ce6"),
-          ("qwen2.5:3b", "en", "qwen2.5:3b English", "#35c3ff"), ("qwen2.5:3b", "ru", "qwen2.5:3b Roman Urdu", "#9aa7c2")]
+GROUPS = [("llama3.1:8b", "en", "llama3.1:8b English", "#1F4E9C"), ("llama3.1:8b", "ru", "llama3.1:8b Roman Urdu", "#E3A800"),
+          ("qwen2.5:3b", "en", "qwen2.5:3b English", "#C8102E"), ("qwen2.5:3b", "ru", "qwen2.5:3b Roman Urdu", "#5FA65A")]
 
 
 def main():
