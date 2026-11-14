@@ -4,6 +4,7 @@ title: "Agent tool-policy benchmark: permission rules and hidden instructions in
 authors:
   - family-names: Hussain
     given-names: Muzammal
+    orcid: "https://orcid.org/0009-0001-2570-5686"
 version: 0.2.0
 date-released: 2026-10-26
 repository-code: "https://github.com/MHKhan50/agent-tool-policy-benchmark"
