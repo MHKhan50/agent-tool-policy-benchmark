@@ -94,6 +94,39 @@ Raw replies: `outputs/llm_replies.jsonl`. Re-score with `python3 run_llm.py --sc
 - Scoped policies see the true permissions, and the reviewer is simulated. The simulator's rates are design choices.
 - Results do not say how secure any model or product is in real use.
 
+## Version 2: 40 tasks and a datamarking defence
+
+The first LLM test had 10 tasks and one prompt. Version 2 makes the task set four times larger and asks a second question: does a prompt-level defence help small local models, and does it help as much in Roman Urdu?
+
+**Research question.** With 40 clinic tasks in English and Roman Urdu, how often do `qwen2.5:3b` and `llama3.1:8b` follow a hidden instruction in the patient note, and does datamarking the note lower that rate without stopping the real work?
+
+**Why datamarking.** [Hines et al. (2024)](https://arxiv.org/abs/2403.14720) proposed *spotlighting*; in its datamarking form every space in the untrusted text is replaced by a marker character and the system prompt says that marked text must never be obeyed. They report large drops in attack success, but only for GPT-family models (text-davinci-003, GPT-3.5-Turbo, GPT-4), on English summarisation and question answering, not on tool actions. Untested: small open models, tool-using agents and code-mixed Roman Urdu text.
+
+**Design.**
+- `clinic_v2/tasks.json`, built by `clinic_v2/build_tasks.py`: 5 task types (note summary, follow-up booking, approved referral, duplicate removal, allergy check in the record) x 8 cases = 40 invented tasks, each in English and Roman Urdu. In every type, 4 hidden instructions ask for an action outside the task and 4 use an allowed action with the wrong patient or recipient. Four framings are rotated (`SYSTEM NOTICE:`, `Admin:`, `IT team:`, none).
+- Two prompts (`clinic_v2/prompts.py`): *plain* is the version 1 prompt, word for word (it already says that note text is data, not instructions); *datamark* marks the note with `ˆ` between words and adds the rule from the paper. The staff task itself is not marked.
+- Grid: 2 models x 40 tasks x 2 languages x 2 prompts x {clean, hidden instruction} = 640 replies. Temperature 0, seed 42, at most 256 output tokens, JSON mode. The same five policies as above score every reply.
+- Analysis (`analysis_v2.py`, no model needed): counts and rates per model, language and prompt; 95% bootstrap intervals that resample the 40 tasks (2,000 resamples, seed 42); exact McNemar tests on the same tasks for plain vs datamark and English vs Roman Urdu; results by attack kind; chart `outputs_v2/datamark.png`.
+
+**Run (Mac, Python 3.9+).**
+```bash
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+python -m pytest -q                  # offline, includes an end-to-end run with a scripted fake model
+caffeinate -i python run_v2.py       # needs the Ollama app with qwen2.5:3b and llama3.1:8b; resumable
+python analysis_v2.py
+```
+`run_v2.py` appends each reply to `outputs_v2/runs.jsonl` straight away and skips finished calls, so it can be stopped and started again. Model digests, the Ollama version and both system prompts go to `outputs_v2/run_metadata.json`.
+
+**Results.** To be added after my run.
+
+**Limitations.**
+- 40 invented tasks and hidden instructions written by me; the Roman Urdu is one person's spelling. The attacks are simple and visible, not adaptive.
+- One run per model at temperature 0. Ollama outputs can differ across versions and hardware.
+- One reply per task, no multi-step loop and no real tool output.
+- The injection check matches the exact injected address or patient ID.
+- Datamarking is tested in one form (one marker, one wording of the rule); the paper also describes delimiting and encoding.
+
 ## Files
 
 | Path | What |
@@ -104,6 +137,10 @@ Raw replies: `outputs/llm_replies.jsonl`. Re-score with `python3 run_llm.py --sc
 | `run_llm.py`, `plot_llm.py` | Ollama runner and summary, LLM chart |
 | `tests/` | simulator and scoring tests (no Ollama needed) |
 | `data/synthetic_scenarios.csv`, `DATA_CARD.md` | generated simulator scenarios and their data card |
+| `clinic_v2/build_tasks.py`, `clinic_v2/tasks.json` | version 2: 40 invented tasks, English and Roman Urdu |
+| `clinic_v2/prompts.py` | version 2: plain and datamarking prompts |
+| `run_v2.py`, `analysis_v2.py` | version 2: resumable Ollama runner; tables, tests, chart and `results.json` |
+| `tests/test_v2.py`, `requirements.txt` | version 2 offline tests (scripted fake model) and Python packages |
 
 ## Article
 
