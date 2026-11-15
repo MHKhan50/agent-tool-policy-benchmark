@@ -1,0 +1,17 @@
+comparison,measure,tasks,a,b,only_a,only_b,p_mcnemar_exact
+llama3.1:8b English: plain (a) vs datamark (b),injection_followed,40,20,2,18,0,0.0
+llama3.1:8b English: plain (a) vs datamark (b),completed,40,40,40,0,0,1.0
+llama3.1:8b Roman Urdu: plain (a) vs datamark (b),injection_followed,40,21,11,13,3,0.0213
+llama3.1:8b Roman Urdu: plain (a) vs datamark (b),completed,40,40,40,0,0,1.0
+llama3.1:8b plain: English (a) vs Roman Urdu (b),injection_followed,40,20,21,6,7,1.0
+llama3.1:8b plain: English (a) vs Roman Urdu (b),completed,40,40,40,0,0,1.0
+llama3.1:8b datamark: English (a) vs Roman Urdu (b),injection_followed,40,2,11,2,11,0.0225
+llama3.1:8b datamark: English (a) vs Roman Urdu (b),completed,40,40,40,0,0,1.0
+qwen2.5:3b English: plain (a) vs datamark (b),injection_followed,40,22,9,13,0,0.0002
+qwen2.5:3b English: plain (a) vs datamark (b),completed,40,40,40,0,0,1.0
+qwen2.5:3b Roman Urdu: plain (a) vs datamark (b),injection_followed,40,24,15,11,2,0.0225
+qwen2.5:3b Roman Urdu: plain (a) vs datamark (b),completed,40,32,24,8,0,0.0078
+qwen2.5:3b plain: English (a) vs Roman Urdu (b),injection_followed,40,22,24,7,9,0.8036
+qwen2.5:3b plain: English (a) vs Roman Urdu (b),completed,40,40,32,8,0,0.0078
+qwen2.5:3b datamark: English (a) vs Roman Urdu (b),injection_followed,40,9,15,5,11,0.2101
+qwen2.5:3b datamark: English (a) vs Roman Urdu (b),completed,40,40,24,16,0,0.0

@@ -1,0 +1,9 @@
+model,language,prompt,tasks_injected,followed,followed_pct,followed_ci_low,followed_ci_high,tasks_clean,clean_completed,clean_completed_pct,clean_completed_ci_low,clean_completed_ci_high,clean_completed_argument_scope,injected_task_still_completed,unparsed,call_errors,value_errors_clean
+llama3.1:8b,English,plain,40,20,50.0,35.0,65.0,40,40,100.0,100.0,100.0,40,30,0,0,0
+llama3.1:8b,English,datamark,40,2,5.0,0.0,12.5,40,40,100.0,100.0,100.0,40,38,0,0,0
+llama3.1:8b,Roman Urdu,plain,40,21,52.5,37.5,67.5,40,40,100.0,100.0,100.0,40,32,0,0,0
+llama3.1:8b,Roman Urdu,datamark,40,11,27.5,15.0,42.5,40,40,100.0,100.0,100.0,40,36,0,0,0
+qwen2.5:3b,English,plain,40,22,55.0,40.0,70.0,40,40,100.0,100.0,100.0,40,24,0,0,0
+qwen2.5:3b,English,datamark,40,9,22.5,10.0,37.5,40,40,100.0,100.0,100.0,40,31,0,0,0
+qwen2.5:3b,Roman Urdu,plain,40,24,60.0,45.0,75.0,40,32,80.0,67.5,92.5,32,21,0,0,6
+qwen2.5:3b,Roman Urdu,datamark,40,15,37.5,22.5,52.5,40,24,60.0,45.0,75.0,24,22,0,0,0
