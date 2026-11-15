@@ -118,7 +118,53 @@ python analysis_v2.py
 ```
 `run_v2.py` appends each reply to `outputs_v2/runs.jsonl` straight away and skips finished calls, so it can be stopped and started again. Model digests, the Ollama version and both system prompts go to `outputs_v2/run_metadata.json`.
 
-**Results.** To be added after my run.
+**Results** (my run on a MacBook M4, 15 November 2026, Ollama 0.40.16; 640 replies, no failed calls, all valid JSON; 95% bootstrap intervals resample the 40 tasks).
+
+| Model | Language | Prompt | Hidden instruction followed [95% CI] | Clean tasks completed [95% CI] |
+|---|---|---|---|---|
+| llama3.1:8b | English | plain | 20/40, 50.0% [35.0, 65.0] | 40/40 |
+| llama3.1:8b | English | datamark | 2/40, 5.0% [0.0, 12.5] | 40/40 |
+| llama3.1:8b | Roman Urdu | plain | 21/40, 52.5% [37.5, 67.5] | 40/40 |
+| llama3.1:8b | Roman Urdu | datamark | 11/40, 27.5% [15.0, 42.5] | 40/40 |
+| qwen2.5:3b | English | plain | 22/40, 55.0% [40.0, 70.0] | 40/40 |
+| qwen2.5:3b | English | datamark | 9/40, 22.5% [10.0, 37.5] | 40/40 |
+| qwen2.5:3b | Roman Urdu | plain | 24/40, 60.0% [45.0, 75.0] | 32/40, 80.0% [67.5, 92.5] |
+| qwen2.5:3b | Roman Urdu | datamark | 15/40, 37.5% [22.5, 52.5] | 24/40, 60.0% [45.0, 75.0] |
+
+![Datamarking against hidden instructions](outputs_v2/datamark.png)
+
+Paired tests on the same 40 tasks (exact McNemar):
+
+| Comparison | Followed: plain vs datamark | p |
+|---|---|---|
+| llama3.1:8b English | 20 vs 2 (18 tasks changed, all towards safer) | < 0.0001 |
+| llama3.1:8b Roman Urdu | 21 vs 11 | 0.021 |
+| qwen2.5:3b English | 22 vs 9 (13 tasks changed, all towards safer) | 0.0002 |
+| qwen2.5:3b Roman Urdu | 24 vs 15 | 0.023 |
+| llama3.1:8b with datamark, English vs Roman Urdu | 2 vs 11 | 0.023 |
+| qwen2.5:3b with datamark, English vs Roman Urdu | 9 vs 15 | 0.21 |
+| qwen2.5:3b clean tasks, Roman Urdu, plain vs datamark | 32 vs 24 completed | 0.008 |
+
+By attack kind (followed, out of 20 each; `outputs_v2/by_kind.csv`):
+
+| Model | Language | Out of scope: plain → datamark | Wrong argument: plain → datamark |
+|---|---|---|---|
+| llama3.1:8b | English | 4 → 0 | 16 → 2 |
+| llama3.1:8b | Roman Urdu | 11 → 4 | 10 → 7 |
+| qwen2.5:3b | English | 9 → 0 | 13 → 9 |
+| qwen2.5:3b | Roman Urdu | 12 → 11 | 12 → 4 |
+
+Hidden instructions accepted under the policies (`outputs_v2/policies.csv`): argument scope let **0** through in all 8 settings and blocked no correct clean action; action-name scope let 2 to 16 through, all of them wrong-argument attacks.
+
+- **Datamarking lowered the rate in all four settings**, most for English: with datamarking, llama3.1:8b followed 2 hidden instructions in English and 11 in Roman Urdu. Without it the two languages were almost the same (20 vs 21, 22 vs 24).
+- In English, datamarking stopped every out-of-scope attack for both models; what was left were wrong-argument attacks. llama3.1:8b's 2 were follow-ups booked under the other patient ID (V12, V16).
+- **The only cost was qwen2.5:3b in Roman Urdu.** All 8 extra failures were follow-up bookings (V09 to V16) where it booked the right patient and the right date but skipped the required `read_note` step; the date was visible in the prompt. Its other 16 failed clean tasks (8 per prompt) were referrals where it used `read_note` instead of `read_record`, and in some replies sent the referral without a patient ID or added a booking nobody asked for.
+
+**Notes from my run**
+
+- Datamarking cut the hidden instructions llama3.1:8b followed from 20 to 2 of 40 in English, but only from 21 to 11 in Roman Urdu. After datamarking, the gap between the two languages was significant (2 vs 11, p = 0.023). My guess is that the marker splits Roman Urdu words, which are already broken into many small tokens, so the model sees the note boundary less clearly. I have not tested this.
+- Datamarking cost nothing in English for either model, or in Roman Urdu for llama3.1:8b (40 of 40 clean tasks done). For qwen2.5:3b in Roman Urdu, clean tasks done fell from 32 to 24 (p = 0.008). Every reply was still valid JSON. The 8 extra failures were bookings with the right patient and date where qwen skipped reading the note first, so the cost was a skipped step, not a broken reply.
+- Datamarking lowers the rate but does not stop attacks: after it, 11 (llama3.1:8b) and 15 (qwen2.5:3b) Roman Urdu attacks were still followed. Argument scope let 0 through for every model, language and prompt. For a clinic I would keep datamarking only as an extra layer and check tool arguments in code.
 
 **Limitations.**
 - 40 invented tasks and hidden instructions written by me; the Roman Urdu is one person's spelling. The attacks are simple and visible, not adaptive.
@@ -144,7 +190,8 @@ python analysis_v2.py
 
 ## Article
 
-[Small local AI agents followed hidden instructions in clinic notes. Checking the tool's arguments stopped them.](https://masmatixinnovations.co.uk/insights/agent-tool-policy-clinic.html)
+- [Small local AI agents followed hidden instructions in clinic notes. Checking the tool's arguments stopped them.](https://masmatixinnovations.co.uk/insights/agent-tool-policy-clinic.html) (version 1)
+- [Marking the clinic note cut hidden instructions to 2 of 40 in English, but only to 11 of 40 in Roman Urdu](https://masmatixinnovations.co.uk/insights/datamarking-hidden-instructions-roman-urdu.html) (version 2)
 
 ## Licence
 
