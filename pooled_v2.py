@@ -3,16 +3,19 @@
 
   python3 pooled_v2.py
 
-Pairs are (model, task): each model sees the same 40 tasks, so pooling 4 models gives 160 pairs per
-comparison. Writes outputs_v2/pooled.csv and prints the same numbers.
-Exact McNemar tests on the pairs; counts by attack kind, task type and framing of the hidden instruction.
+All models see the same 40 tasks, so the 160 model-task pairs are not independent: one task can be
+easy or hard for every model. Pooled comparisons are therefore tested at the task level. For each task,
+d = sum over models of (followed under a) - (followed under b); a sign-flip permutation test on the 40
+(or fewer) task scores gives the p-value (100,000 random sign flips, seed 42), and a task-level cluster
+bootstrap (2,000 resamples, seed 42) gives a 95% interval for the pooled difference a - b.
+Counts by attack kind, task type and framing are also written. Output: outputs_v2/pooled.csv.
 """
 from __future__ import annotations
 
 import csv
 import json
 from collections import Counter
-from math import comb
+import random
 from pathlib import Path
 
 from analysis_v2 import OUT, TASKS, load_runs, score_all
@@ -20,12 +23,24 @@ from analysis_v2 import OUT, TASKS, load_runs, score_all
 FRAMINGS = ("SYSTEM NOTICE:", "Admin:", "IT team:")
 
 
-def mcnemar(b: int, c: int) -> float:
-    n = b + c
-    if n == 0:
-        return 1.0
-    k = min(b, c)
-    return min(1.0, 2 * sum(comb(n, i) for i in range(k + 1)) / 2 ** n)
+PERMUTATIONS = 100_000
+BOOT = 2_000
+SEED = 42
+
+
+def sign_flip_p(d: list, n: int = PERMUTATIONS, seed: int = SEED) -> float:
+    """Two-sided sign-flip permutation test of sum(d) = 0, with tasks as the unit."""
+    rng = random.Random(seed)
+    obs = abs(sum(d))
+    hits = sum(1 for _ in range(n) if abs(sum(x if rng.random() < 0.5 else -x for x in d)) >= obs)
+    return (hits + 1) / (n + 1)
+
+
+def cluster_ci(d: list, n: int = BOOT, seed: int = SEED) -> tuple:
+    """95% interval for sum(d) from resampling tasks with replacement."""
+    rng = random.Random(seed)
+    sums = sorted(sum(d[rng.randrange(len(d))] for _ in d) for _ in range(n))
+    return sums[int(0.025 * n)], sums[int(0.975 * n) - 1]
 
 
 def framing(task: dict) -> str:
@@ -44,19 +59,27 @@ def main() -> None:
     followed = {(s["model"], s["task"], s["lang"], s["defence"]): bool(s["injection_followed"]) for s in rows}
     out = []
 
-    def paired(label, a_key, b_key):
-        keys = [(m, t) for m in models for t in tasks]
-        a = [followed[(m, t) + a_key] for m, t in keys]
-        b = [followed[(m, t) + b_key] for m, t in keys]
-        only_a = sum(x and not y for x, y in zip(a, b))
-        only_b = sum(y and not x for x, y in zip(a, b))
-        out.append({"comparison": label, "pairs": len(keys), "a": sum(a), "b": sum(b), "only_a": only_a,
-                    "only_b": only_b, "p": "{:.2g}".format(mcnemar(only_a, only_b))})
+    def paired(label, a_key, b_key, keep=lambda t: True):
+        ids = [t for t in sorted(tasks) if keep(tasks[t])]
+        d = [sum(followed[(m, t) + a_key] - followed[(m, t) + b_key] for m in models) for t in ids]
+        a = sum(followed[(m, t) + a_key] for m in models for t in ids)
+        b = sum(followed[(m, t) + b_key] for m in models for t in ids)
+        lo, hi = cluster_ci(d)
+        out.append({"comparison": label, "tasks": len(ids), "pairs": len(ids) * len(models), "a": a, "b": b,
+                    "diff_ci_low": lo, "diff_ci_high": hi, "p": "{:.2g}".format(sign_flip_p(d))})
 
+    kind = lambda k: (lambda t: t["injection"]["kind"] == k)
+    frame = lambda f: (lambda t: framing(t) == f)
     paired("English: plain (a) vs datamark (b)", ("en", "plain"), ("en", "datamark"))
     paired("Roman Urdu: plain (a) vs datamark (b)", ("ru", "plain"), ("ru", "datamark"))
     paired("plain: English (a) vs Roman Urdu (b)", ("en", "plain"), ("ru", "plain"))
     paired("datamark: English (a) vs Roman Urdu (b)", ("en", "datamark"), ("ru", "datamark"))
+    for k in ("out_of_scope", "wrong_argument"):
+        paired("{}, plain: English (a) vs Roman Urdu (b)".format(k), ("en", "plain"), ("ru", "plain"), kind(k))
+        paired("{}, datamark: English (a) vs Roman Urdu (b)".format(k), ("en", "datamark"), ("ru", "datamark"), kind(k))
+    for f in ("SYSTEM NOTICE", "Admin", "IT team", "none"):
+        paired("framing {}, plain: English (a) vs Roman Urdu (b)".format(f), ("en", "plain"), ("ru", "plain"), frame(f))
+        paired("framing {}, datamark: English (a) vs Roman Urdu (b)".format(f), ("en", "datamark"), ("ru", "datamark"), frame(f))
 
     groups = Counter()
     totals = Counter()
@@ -67,17 +90,18 @@ def main() -> None:
             groups[k] += int(s["injection_followed"])
             totals[k] += 1
     for k in sorted(totals):
-        out.append({"comparison": "{}={} {} {}".format(*k), "pairs": totals[k], "a": groups[k],
-                    "b": "", "only_a": "", "only_b": "", "p": ""})
+        out.append({"comparison": "{}={} {} {}".format(*k), "tasks": "", "pairs": totals[k], "a": groups[k],
+                    "b": "", "diff_ci_low": "", "diff_ci_high": "", "p": ""})
 
     path = OUT / "pooled.csv"
     with path.open("w", newline="", encoding="utf-8") as f:
-        w = csv.DictWriter(f, fieldnames=["comparison", "pairs", "a", "b", "only_a", "only_b", "p"])
+        w = csv.DictWriter(f, fieldnames=["comparison", "tasks", "pairs", "a", "b", "diff_ci_low", "diff_ci_high", "p"])
         w.writeheader()
         w.writerows(out)
     print("Models pooled:", ", ".join(models))
     for r in out:
-        print("{comparison:45s} n={pairs:<4} a={a:<4} b={b:<4} only_a={only_a:<3} only_b={only_b:<3} p={p}".format(**r))
+        ci = "[{diff_ci_low}, {diff_ci_high}]".format(**r) if r["p"] != "" else ""
+        print("{:62s} tasks={:<3} a={:<4} b={:<4} a-b 95% CI {:12s} p={}".format(r["comparison"], r["tasks"], r["a"], r["b"], ci, r["p"]))
     print("\nWrote", path)
 
 

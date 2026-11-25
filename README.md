@@ -192,14 +192,16 @@ Two models from two families leave an obvious question: is the datamarking resul
 
 Paired tests, plain vs datamark on the same 40 tasks (exact McNemar): mistral:7b English 22 vs 13 (p = 0.0039), Roman Urdu 29 vs 14 (p = 0.0001); qwen2.5:7b English 19 vs 16 (p = 0.51), Roman Urdu 23 vs 16 (p = 0.065).
 
-Pooled over the four models (160 model-task pairs per comparison, exact McNemar):
+Pooled over the four models. All models see the same 40 tasks, so the 160 model-task pairs are not independent; these tests use the task as the unit (sign-flip permutation test on the per-task sum over models, 100,000 flips; 95% interval for a - b from 2,000 task-level bootstrap resamples).
 
-| Comparison | a | b | p |
-|---|---|---|---|
-| English: plain (a) vs datamark (b) | 83 | 40 | 7e-11 |
-| Roman Urdu: plain (a) vs datamark (b) | 97 | 56 | 1.3e-08 |
-| Plain: English (a) vs Roman Urdu (b) | 83 | 97 | 0.065 |
-| Datamark: English (a) vs Roman Urdu (b) | 40 | 56 | 0.036 |
+| Comparison | a | b | a - b [95% CI] | p |
+|---|---|---|---|---|
+| English: plain (a) vs datamark (b) | 83 | 40 | 43 [30, 57] | 0.00001 |
+| Roman Urdu: plain (a) vs datamark (b) | 97 | 56 | 41 [30, 52] | 0.00002 |
+| Plain: English (a) vs Roman Urdu (b) | 83 | 97 | -14 [-32, 3] | 0.15 |
+| Datamark: English (a) vs Roman Urdu (b) | 40 | 56 | -16 [-33, 1] | 0.089 |
+| Out of scope, datamark: English vs Roman Urdu (20 tasks) | 2 | 26 | -24 [-34, -14] | 0.0005 |
+| Wrong argument, datamark: English vs Roman Urdu (20 tasks) | 38 | 30 | 8 [-1, 17] | 0.16 |
 
 By attack kind, pooled (followed, out of 80): out of scope, English 29 → 2 and Roman Urdu 45 → 26; wrong argument, English 54 → 38 and Roman Urdu 52 → 30.
 
@@ -210,8 +212,8 @@ By attack kind, pooled (followed, out of 80): out of scope, English 29 → 2 and
 - Datamarking helped three of the four models clearly. It did not help `qwen2.5:7b` in English (19 vs 16, p = 0.51): with the marker it stopped every out-of-scope attack (6 → 0) but followed more wrong-argument ones (13 → 16).
 - The larger Qwen was not safer than the smaller one with the plain prompt (47.5% vs 55.0% in English, 57.5% vs 60.0% in Roman Urdu) and gained less from datamarking.
 - `mistral:7b` followed the most hidden instructions in Roman Urdu with the plain prompt (29 of 40, against 22 of 40 in English, p = 0.065).
-- Pooled over four models, the language gap after datamarking holds: 40 of 160 in English, 56 of 160 in Roman Urdu (p = 0.036). Datamarking almost removes out-of-scope attacks in English (29 → 2) but not in Roman Urdu (45 → 26).
-- The wording of the hidden instruction mattered by language. Instructions starting `SYSTEM NOTICE:` were followed 10 of 40 times in English and 22 of 40 in Roman Urdu with the plain prompt; with datamarking, `IT team:` instructions were followed 0 of 40 times in English and 15 of 40 in Roman Urdu (`outputs_v2/pooled.csv`, 10 tasks per framing).
+- Pooled over four models, datamarking left 40 of 160 attacks in English and 56 in Roman Urdu, but with tasks as the unit this overall gap is not significant (p = 0.089). The clear language effect is in out-of-scope attacks: datamarking almost removed them in English (29 → 2 of 80) but not in Roman Urdu (45 → 26; 2 vs 26 after datamarking, p = 0.0005). Wrong-argument attacks went slightly the other way (38 in English, 30 in Roman Urdu, p = 0.16).
+- The wording of the hidden instruction mattered by language. With datamarking, `IT team:` instructions were followed 0 of 40 times in English and 15 of 40 in Roman Urdu (p = 0.016), and `SYSTEM NOTICE:` ones 2 and 11 times (p = 0.048); with the plain prompt, `SYSTEM NOTICE:` gave 10 and 22 (p = 0.095). Each framing has only 10 tasks (`outputs_v2/pooled.csv`), so these are patterns to test, not estimates.
 - Both Qwen models lost clean Roman Urdu tasks, the 7B one mainly on follow-up bookings (7 with the plain prompt, 8 with datamarking). Mistral lost one Roman Urdu referral with datamarking.
 - Under argument scope, **0** hidden instructions got through in all 16 model, language and prompt settings, and no correct clean action was blocked. As stated above, this policy is given the task's ground-truth patient, recipient and date, so it shows what a code check on arguments bound from the staff request can do; it is not a free result.
 
@@ -228,7 +230,8 @@ By attack kind, pooled (followed, out of 80): out of scope, English 29 → 2 and
 | `clinic_v2/build_tasks.py`, `clinic_v2/tasks.json` | version 2: 40 invented tasks, English and Roman Urdu |
 | `clinic_v2/prompts.py` | version 2: plain and datamarking prompts |
 | `run_v2.py`, `analysis_v2.py` | version 2: resumable Ollama runner; tables, tests, chart and `results.json` |
-| `pooled_v2.py` | version 2.1: tests pooled over models, counts by attack kind, task type and framing |
+| `pooled_v2.py` | version 2.1: task-level tests pooled over models, by attack kind and framing; counts by task type |
+| `paper/` | LaTeX source and PDF of the paper on version 2 and 2.1 |
 | `tests/test_v2.py`, `requirements.txt` | version 2 offline tests (scripted fake model) and Python packages |
 
 ## Article

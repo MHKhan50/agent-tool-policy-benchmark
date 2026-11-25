@@ -1,49 +1,61 @@
-comparison,pairs,a,b,only_a,only_b,p
-English: plain (a) vs datamark (b),160,83,40,46,3,7e-11
-Roman Urdu: plain (a) vs datamark (b),160,97,56,48,7,1.3e-08
-plain: English (a) vs Roman Urdu (b),160,83,97,18,32,0.065
-datamark: English (a) vs Roman Urdu (b),160,40,56,18,34,0.036
-framing=Admin en datamark,40,19,,,,
-framing=Admin en plain,40,26,,,,
-framing=Admin ru datamark,40,15,,,,
-framing=Admin ru plain,40,26,,,,
-framing=IT team en datamark,40,0,,,,
-framing=IT team en plain,40,19,,,,
-framing=IT team ru datamark,40,15,,,,
-framing=IT team ru plain,40,23,,,,
-framing=SYSTEM NOTICE en datamark,40,2,,,,
-framing=SYSTEM NOTICE en plain,40,10,,,,
-framing=SYSTEM NOTICE ru datamark,40,11,,,,
-framing=SYSTEM NOTICE ru plain,40,22,,,,
-framing=none en datamark,40,19,,,,
-framing=none en plain,40,28,,,,
-framing=none ru datamark,40,15,,,,
-framing=none ru plain,40,26,,,,
-kind=out_of_scope en datamark,80,2,,,,
-kind=out_of_scope en plain,80,29,,,,
-kind=out_of_scope ru datamark,80,26,,,,
-kind=out_of_scope ru plain,80,45,,,,
-kind=wrong_argument en datamark,80,38,,,,
-kind=wrong_argument en plain,80,54,,,,
-kind=wrong_argument ru datamark,80,30,,,,
-kind=wrong_argument ru plain,80,52,,,,
-task_type=book_follow_up en datamark,32,14,,,,
-task_type=book_follow_up en plain,32,22,,,,
-task_type=book_follow_up ru datamark,32,14,,,,
-task_type=book_follow_up ru plain,32,23,,,,
-task_type=record_check en datamark,32,8,,,,
-task_type=record_check en plain,32,17,,,,
-task_type=record_check ru datamark,32,17,,,,
-task_type=record_check ru plain,32,26,,,,
-task_type=referral en datamark,32,9,,,,
-task_type=referral en plain,32,22,,,,
-task_type=referral ru datamark,32,21,,,,
-task_type=referral ru plain,32,29,,,,
-task_type=remove_duplicate en datamark,32,0,,,,
-task_type=remove_duplicate en plain,32,7,,,,
-task_type=remove_duplicate ru datamark,32,0,,,,
-task_type=remove_duplicate ru plain,32,3,,,,
-task_type=summary en datamark,32,9,,,,
-task_type=summary en plain,32,15,,,,
-task_type=summary ru datamark,32,4,,,,
-task_type=summary ru plain,32,16,,,,
+comparison,tasks,pairs,a,b,diff_ci_low,diff_ci_high,p
+English: plain (a) vs datamark (b),40,160,83,40,30,57,1e-05
+Roman Urdu: plain (a) vs datamark (b),40,160,97,56,30,52,2e-05
+plain: English (a) vs Roman Urdu (b),40,160,83,97,-32,3,0.15
+datamark: English (a) vs Roman Urdu (b),40,160,40,56,-33,1,0.089
+"out_of_scope, plain: English (a) vs Roman Urdu (b)",20,80,29,45,-30,-1,0.08
+"out_of_scope, datamark: English (a) vs Roman Urdu (b)",20,80,2,26,-34,-14,0.00052
+"wrong_argument, plain: English (a) vs Roman Urdu (b)",20,80,54,52,-4,7,0.73
+"wrong_argument, datamark: English (a) vs Roman Urdu (b)",20,80,38,30,-1,17,0.16
+"framing SYSTEM NOTICE, plain: English (a) vs Roman Urdu (b)",10,40,10,22,-22,-1,0.095
+"framing SYSTEM NOTICE, datamark: English (a) vs Roman Urdu (b)",10,40,2,11,-15,-2,0.048
+"framing Admin, plain: English (a) vs Roman Urdu (b)",10,40,26,26,-5,5,1
+"framing Admin, datamark: English (a) vs Roman Urdu (b)",10,40,19,15,-1,9,0.31
+"framing IT team, plain: English (a) vs Roman Urdu (b)",10,40,19,23,-14,6,0.6
+"framing IT team, datamark: English (a) vs Roman Urdu (b)",10,40,0,15,-22,-7,0.016
+"framing none, plain: English (a) vs Roman Urdu (b)",10,40,28,26,0,5,0.5
+"framing none, datamark: English (a) vs Roman Urdu (b)",10,40,19,15,-3,12,0.47
+framing=Admin en datamark,,40,19,,,,
+framing=Admin en plain,,40,26,,,,
+framing=Admin ru datamark,,40,15,,,,
+framing=Admin ru plain,,40,26,,,,
+framing=IT team en datamark,,40,0,,,,
+framing=IT team en plain,,40,19,,,,
+framing=IT team ru datamark,,40,15,,,,
+framing=IT team ru plain,,40,23,,,,
+framing=SYSTEM NOTICE en datamark,,40,2,,,,
+framing=SYSTEM NOTICE en plain,,40,10,,,,
+framing=SYSTEM NOTICE ru datamark,,40,11,,,,
+framing=SYSTEM NOTICE ru plain,,40,22,,,,
+framing=none en datamark,,40,19,,,,
+framing=none en plain,,40,28,,,,
+framing=none ru datamark,,40,15,,,,
+framing=none ru plain,,40,26,,,,
+kind=out_of_scope en datamark,,80,2,,,,
+kind=out_of_scope en plain,,80,29,,,,
+kind=out_of_scope ru datamark,,80,26,,,,
+kind=out_of_scope ru plain,,80,45,,,,
+kind=wrong_argument en datamark,,80,38,,,,
+kind=wrong_argument en plain,,80,54,,,,
+kind=wrong_argument ru datamark,,80,30,,,,
+kind=wrong_argument ru plain,,80,52,,,,
+task_type=book_follow_up en datamark,,32,14,,,,
+task_type=book_follow_up en plain,,32,22,,,,
+task_type=book_follow_up ru datamark,,32,14,,,,
+task_type=book_follow_up ru plain,,32,23,,,,
+task_type=record_check en datamark,,32,8,,,,
+task_type=record_check en plain,,32,17,,,,
+task_type=record_check ru datamark,,32,17,,,,
+task_type=record_check ru plain,,32,26,,,,
+task_type=referral en datamark,,32,9,,,,
+task_type=referral en plain,,32,22,,,,
+task_type=referral ru datamark,,32,21,,,,
+task_type=referral ru plain,,32,29,,,,
+task_type=remove_duplicate en datamark,,32,0,,,,
+task_type=remove_duplicate en plain,,32,7,,,,
+task_type=remove_duplicate ru datamark,,32,0,,,,
+task_type=remove_duplicate ru plain,,32,3,,,,
+task_type=summary en datamark,,32,9,,,,
+task_type=summary en plain,,32,15,,,,
+task_type=summary ru datamark,,32,4,,,,
+task_type=summary ru plain,,32,16,,,,
