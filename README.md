@@ -1,6 +1,6 @@
 # Agent tool-policy benchmark: do permission rules stop hidden instructions in a clinic?
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24228476.svg)](https://doi.org/10.5281/zenodo.24228476)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24228475.svg)](https://doi.org/10.5281/zenodo.24228475)
 
 A small, reproducible test of five ways to control what a tool-using AI agent may do, first in a simulator and then with real local models (`qwen2.5:3b`, `llama3.1:8b`, and in version 2.1 also `mistral:7b` and `qwen2.5:7b`) on invented physiotherapy-clinic tasks in English and Roman Urdu.
 
