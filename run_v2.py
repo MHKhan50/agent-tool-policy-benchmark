@@ -4,7 +4,7 @@
 Every reply is appended to outputs_v2/runs.jsonl as soon as it arrives, and finished keys are skipped, so
 the run can be stopped (Ctrl+C) and started again. Nothing is executed; the model only proposes actions.
 
-  python3 run_v2.py                                  # qwen2.5:3b and llama3.1:8b, needs the Ollama app
+  python3 run_v2.py                                  # the four models of version 2.1, needs the Ollama app
   python3 run_v2.py --models qwen2.5:3b --limit 4    # quick check on 4 tasks
 """
 from __future__ import annotations
@@ -131,7 +131,7 @@ def run(models: List[str], tasks: List[Dict[str, Any]], ask: AskFn, runs_path: P
 
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--models", nargs="+", default=["qwen2.5:3b", "llama3.1:8b"])
+    ap.add_argument("--models", nargs="+", default=["qwen2.5:3b", "llama3.1:8b", "mistral:7b", "qwen2.5:7b"])
     ap.add_argument("--host", default="http://localhost:11434")
     ap.add_argument("--limit", type=int, default=0, help="use only the first N tasks (quick check)")
     a = ap.parse_args()

@@ -2,7 +2,7 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24228476.svg)](https://doi.org/10.5281/zenodo.24228476)
 
-A small, reproducible test of five ways to control what a tool-using AI agent may do, first in a simulator and then with real local models (`qwen2.5:3b`, `llama3.1:8b`) on invented physiotherapy-clinic tasks in English and Roman Urdu.
+A small, reproducible test of five ways to control what a tool-using AI agent may do, first in a simulator and then with real local models (`qwen2.5:3b`, `llama3.1:8b`, and in version 2.1 also `mistral:7b` and `qwen2.5:7b`) on invented physiotherapy-clinic tasks in English and Roman Urdu.
 
 ## Research question
 
@@ -173,6 +173,48 @@ Hidden instructions accepted under the policies (`outputs_v2/policies.csv`): arg
 - The injection check matches the exact injected address or patient ID.
 - Datamarking is tested in one form (one marker, one wording of the rule); the paper also describes delimiting and encoding.
 
+## Version 2.1: four models
+
+Two models from two families leave an obvious question: is the datamarking result a property of those two models? Version 2.1 runs the same 40 tasks, prompts, settings and scoring on two more models: `mistral:7b` (a third family) and `qwen2.5:7b` (the same family as `qwen2.5:3b`, about twice the size). Nothing else changed; the first 640 replies are the 15 November run, unchanged.
+
+**Run.** Same commands as version 2, with `caffeinate -i python run_v2.py --models mistral:7b qwen2.5:7b` (25 November 2026, MacBook M4, Ollama 0.40.16, model digests in `outputs_v2/run_metadata_2026-11-25.json`; the 15 November metadata stays in `outputs_v2/run_metadata.json`). 1,280 replies in total, no failed calls, all valid JSON. `python3 pooled_v2.py` adds the pooled tests below (`outputs_v2/pooled.csv`).
+
+| Model | Language | Prompt | Hidden instruction followed [95% CI] | Clean tasks completed |
+|---|---|---|---|---|
+| mistral:7b | English | plain | 22/40, 55.0% [40.0, 70.0] | 40/40 |
+| mistral:7b | English | datamark | 13/40, 32.5% [17.5, 47.5] | 40/40 |
+| mistral:7b | Roman Urdu | plain | 29/40, 72.5% [60.0, 85.0] | 40/40 |
+| mistral:7b | Roman Urdu | datamark | 14/40, 35.0% [20.0, 50.0] | 39/40 |
+| qwen2.5:7b | English | plain | 19/40, 47.5% [32.5, 62.5] | 40/40 |
+| qwen2.5:7b | English | datamark | 16/40, 40.0% [25.0, 55.0] | 40/40 |
+| qwen2.5:7b | Roman Urdu | plain | 23/40, 57.5% [42.5, 72.5] | 33/40 |
+| qwen2.5:7b | Roman Urdu | datamark | 16/40, 40.0% [25.0, 55.0] | 32/40 |
+
+Paired tests, plain vs datamark on the same 40 tasks (exact McNemar): mistral:7b English 22 vs 13 (p = 0.0039), Roman Urdu 29 vs 14 (p = 0.0001); qwen2.5:7b English 19 vs 16 (p = 0.51), Roman Urdu 23 vs 16 (p = 0.065).
+
+Pooled over the four models (160 model-task pairs per comparison, exact McNemar):
+
+| Comparison | a | b | p |
+|---|---|---|---|
+| English: plain (a) vs datamark (b) | 83 | 40 | 7e-11 |
+| Roman Urdu: plain (a) vs datamark (b) | 97 | 56 | 1.3e-08 |
+| Plain: English (a) vs Roman Urdu (b) | 83 | 97 | 0.065 |
+| Datamark: English (a) vs Roman Urdu (b) | 40 | 56 | 0.036 |
+
+By attack kind, pooled (followed, out of 80): out of scope, English 29 → 2 and Roman Urdu 45 → 26; wrong argument, English 54 → 38 and Roman Urdu 52 → 30.
+
+![Datamarking against hidden instructions, four models](outputs_v2/datamark.png)
+
+**Notes from the four-model run**
+
+- Datamarking helped three of the four models clearly. It did not help `qwen2.5:7b` in English (19 vs 16, p = 0.51): with the marker it stopped every out-of-scope attack (6 → 0) but followed more wrong-argument ones (13 → 16).
+- The larger Qwen was not safer than the smaller one with the plain prompt (47.5% vs 55.0% in English, 57.5% vs 60.0% in Roman Urdu) and gained less from datamarking.
+- `mistral:7b` followed the most hidden instructions in Roman Urdu with the plain prompt (29 of 40, against 22 of 40 in English, p = 0.065).
+- Pooled over four models, the language gap after datamarking holds: 40 of 160 in English, 56 of 160 in Roman Urdu (p = 0.036). Datamarking almost removes out-of-scope attacks in English (29 → 2) but not in Roman Urdu (45 → 26).
+- The wording of the hidden instruction mattered by language. Instructions starting `SYSTEM NOTICE:` were followed 10 of 40 times in English and 22 of 40 in Roman Urdu with the plain prompt; with datamarking, `IT team:` instructions were followed 0 of 40 times in English and 15 of 40 in Roman Urdu (`outputs_v2/pooled.csv`, 10 tasks per framing).
+- Both Qwen models lost clean Roman Urdu tasks, the 7B one mainly on follow-up bookings (7 with the plain prompt, 8 with datamarking). Mistral lost one Roman Urdu referral with datamarking.
+- Under argument scope, **0** hidden instructions got through in all 16 model, language and prompt settings, and no correct clean action was blocked. As stated above, this policy is given the task's ground-truth patient, recipient and date, so it shows what a code check on arguments bound from the staff request can do; it is not a free result.
+
 ## Files
 
 | Path | What |
@@ -186,12 +228,14 @@ Hidden instructions accepted under the policies (`outputs_v2/policies.csv`): arg
 | `clinic_v2/build_tasks.py`, `clinic_v2/tasks.json` | version 2: 40 invented tasks, English and Roman Urdu |
 | `clinic_v2/prompts.py` | version 2: plain and datamarking prompts |
 | `run_v2.py`, `analysis_v2.py` | version 2: resumable Ollama runner; tables, tests, chart and `results.json` |
+| `pooled_v2.py` | version 2.1: tests pooled over models, counts by attack kind, task type and framing |
 | `tests/test_v2.py`, `requirements.txt` | version 2 offline tests (scripted fake model) and Python packages |
 
 ## Article
 
 - [Small local AI agents followed hidden instructions in clinic notes. Checking the tool's arguments stopped them.](https://masmatixinnovations.co.uk/insights/agent-tool-policy-clinic.html) (version 1)
 - [Marking the clinic note cut hidden instructions to 2 of 40 in English, but only to 11 of 40 in Roman Urdu](https://masmatixinnovations.co.uk/insights/datamarking-hidden-instructions-roman-urdu.html) (version 2)
+- [Marking the clinic note helped three small AI models and not the fourth, and helped least in Roman Urdu](https://masmatixinnovations.co.uk/insights/datamarking-four-local-models.html) (version 2.1)
 
 ## Licence
 

@@ -7,6 +7,14 @@ llama3.1:8b plain: English (a) vs Roman Urdu (b),injection_followed,40,20,21,6,7
 llama3.1:8b plain: English (a) vs Roman Urdu (b),completed,40,40,40,0,0,1.0
 llama3.1:8b datamark: English (a) vs Roman Urdu (b),injection_followed,40,2,11,2,11,0.0225
 llama3.1:8b datamark: English (a) vs Roman Urdu (b),completed,40,40,40,0,0,1.0
+mistral:7b English: plain (a) vs datamark (b),injection_followed,40,22,13,9,0,0.0039
+mistral:7b English: plain (a) vs datamark (b),completed,40,40,40,0,0,1.0
+mistral:7b Roman Urdu: plain (a) vs datamark (b),injection_followed,40,29,14,15,0,0.0001
+mistral:7b Roman Urdu: plain (a) vs datamark (b),completed,40,40,39,1,0,1.0
+mistral:7b plain: English (a) vs Roman Urdu (b),injection_followed,40,22,29,2,9,0.0654
+mistral:7b plain: English (a) vs Roman Urdu (b),completed,40,40,40,0,0,1.0
+mistral:7b datamark: English (a) vs Roman Urdu (b),injection_followed,40,13,14,6,7,1.0
+mistral:7b datamark: English (a) vs Roman Urdu (b),completed,40,40,39,1,0,1.0
 qwen2.5:3b English: plain (a) vs datamark (b),injection_followed,40,22,9,13,0,0.0002
 qwen2.5:3b English: plain (a) vs datamark (b),completed,40,40,40,0,0,1.0
 qwen2.5:3b Roman Urdu: plain (a) vs datamark (b),injection_followed,40,24,15,11,2,0.0225
@@ -15,3 +23,11 @@ qwen2.5:3b plain: English (a) vs Roman Urdu (b),injection_followed,40,22,24,7,9,
 qwen2.5:3b plain: English (a) vs Roman Urdu (b),completed,40,40,32,8,0,0.0078
 qwen2.5:3b datamark: English (a) vs Roman Urdu (b),injection_followed,40,9,15,5,11,0.2101
 qwen2.5:3b datamark: English (a) vs Roman Urdu (b),completed,40,40,24,16,0,0.0
+qwen2.5:7b English: plain (a) vs datamark (b),injection_followed,40,19,16,6,3,0.5078
+qwen2.5:7b English: plain (a) vs datamark (b),completed,40,40,40,0,0,1.0
+qwen2.5:7b Roman Urdu: plain (a) vs datamark (b),injection_followed,40,23,16,9,2,0.0654
+qwen2.5:7b Roman Urdu: plain (a) vs datamark (b),completed,40,33,32,1,0,1.0
+qwen2.5:7b plain: English (a) vs Roman Urdu (b),injection_followed,40,19,23,3,7,0.3438
+qwen2.5:7b plain: English (a) vs Roman Urdu (b),completed,40,40,33,7,0,0.0156
+qwen2.5:7b datamark: English (a) vs Roman Urdu (b),injection_followed,40,16,16,5,5,1.0
+qwen2.5:7b datamark: English (a) vs Roman Urdu (b),completed,40,40,32,8,0,0.0078

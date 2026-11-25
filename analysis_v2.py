@@ -200,7 +200,7 @@ def chart(summary: List[Dict[str, Any]], path: Path) -> None:
 
     groups = sorted({(r["model"], r["language"]) for r in summary}, key=lambda g: (g[0], g[1] != "English"))
     look = {(r["model"], r["language"], r["prompt"]): r for r in summary}
-    fig, axes = plt.subplots(1, 2, figsize=(11, 4.6), dpi=200)
+    fig, axes = plt.subplots(1, 2, figsize=(13, 4.8), dpi=200)
     panels = [("followed", "Hidden instruction followed (%)\nlower is safer"),
               ("clean_completed", "Clean tasks completed (%)\nhigher is better")]
     w = 0.38
@@ -219,7 +219,8 @@ def chart(summary: List[Dict[str, Any]], path: Path) -> None:
             ax.bar(xs, ys, w, color=colour, label=name, yerr=[lo, hi], capsize=3,
                    error_kw={"elinewidth": 1, "ecolor": "#0f1932"})
         ax.set_xticks(range(len(groups)))
-        ax.set_xticklabels(["{}\n{}".format(m, l) for m, l in groups], fontsize=8.5)
+        short = {"English": "EN", "Roman Urdu": "RU"}
+        ax.set_xticklabels(["{}\n{}".format(m, short.get(l, l)) for m, l in groups], fontsize=8)
         ax.set_ylim(0, 105)
         ax.set_title(title, fontsize=10.5, color="#0f1932")
         ax.grid(axis="y", color="#dbe3f0")
@@ -228,7 +229,7 @@ def chart(summary: List[Dict[str, Any]], path: Path) -> None:
             ax.spines[side].set_visible(False)
     axes[0].legend(frameon=False, fontsize=9)
     n = max(int(r["tasks_injected"]) for r in summary)
-    fig.suptitle("Datamarking against hidden instructions in clinic notes ({} tasks, temperature 0, 95% bootstrap CI)".format(n),
+    fig.suptitle("Datamarking against hidden instructions in clinic notes ({} tasks, temperature 0, 95% bootstrap CI; EN = English, RU = Roman Urdu)".format(n),
                  fontsize=11, color="#0f1932")
     fig.tight_layout()
     fig.savefig(path, facecolor="white")
