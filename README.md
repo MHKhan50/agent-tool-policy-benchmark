@@ -242,4 +242,4 @@ By attack kind, pooled (followed, out of 80): out of scope, English 29 → 2 and
 
 ## Licence
 
-Code MIT. Generated and invented data CC0. See `LICENSE` and `DATA_CARD.md`.
+Code MIT. Generated and invented data CC BY 4.0 (`DATA_LICENSE.txt`), the same licence as on Kaggle. Releases before v0.2.2 were CC0. See `LICENSE` and `DATA_CARD.md`.

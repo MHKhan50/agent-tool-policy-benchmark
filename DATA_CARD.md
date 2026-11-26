@@ -37,7 +37,7 @@ Scenarios and action spaces are hand-designed; there are only four task types an
 
 ## Licensing and attribution
 
-Generated scenario data is intended to be CC0/public-domain-equivalent where legally possible. Code is MIT licensed. If redistributing, include this card and the version/seed/rates. No third-party data is used.
+Generated scenario data is released under CC BY 4.0 (see `DATA_LICENSE.txt`); releases before v0.2.2 were CC0. Code is MIT licensed. If redistributing, include this card and the version/seed/rates. No third-party data is used.
 
 ## Clinic tasks
 
